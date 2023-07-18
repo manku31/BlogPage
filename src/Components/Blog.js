@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect, useReducer } from "react";
+import { db } from "../firebaseInit";
+import { collection, addDoc } from "firebase/firestore";
 
-function blogsReducer(state, action) {    // state have the current value and action have updatede thing
+function blogsReducer(state, action) {
+  // state have the current value and action have updatede thing
   switch (action.type) {
     case "ADD":
       return [action.blog, ...state];
@@ -18,17 +21,25 @@ export default function Blog() {
   const [blogs, dispatch] = useReducer(blogsReducer, []); // reuce the action option like add or remove
   const titleRef = useRef(null); // for Focusing on input curcer
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    titleRef.current.focus();
 
     dispatch({
       type: "ADD",
       blog: { title: formData.title, content: formData.content },
     });
 
+    // Add a new document with a generated id in FireBase.
+    // const docRef = await addDoc(collection(db, "blogs"), {...}   //This is also a way to add
+    await addDoc(collection(db, "blogs"), {
+      title: formData.title,
+      content: formData.content,
+      createdOn: new Date(),
+    });
+
     // setBlogs([{ title: formData.title, content: formData.content }, ...blogs]);
     setFormData({ title: "", content: "" });
-    titleRef.current.focus();
   }
 
   function removeBlog(i) {
